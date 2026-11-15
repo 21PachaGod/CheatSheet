@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI e DAX - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #f2c811; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #d4a90a; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #d4a90a; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #b8920a; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #f2c811; background: #fef9e7; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #5a4a0a; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #d4a90a; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th { background: #f2c811; color: #fff; padding: 10px; text-align: left; }
+        td { border: 1px solid #dee2e6; padding: 8px; font-size: 13px; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #d4a90a; color: #fff; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html" class="active">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>Power BI e DAX - Dashboards BI</h1>
+
+    <!-- Modelação -->
+    <section class="card">
+        <h2>1. Modelo de Dados (Star Schema)</h2>
+        <div class="teoria">
+            O Modulo 2 (Dashboards BI) exige a construcao de um modelo relacional correto. O dataset Frutose segue o esquema estrela: uma tabela de factos (<code>FactSales</code>) rodeada por tabelas dimensionais (<code>DimCostumer</code>, <code>DimProduct</code>, <code>DimStore</code>, <code>DimDate</code>).
+        </div>
+        <h3>Relacoes a Criar no Power BI</h3>
+        <table>
+            <tr><th>De (Facto)</th><th>Para (Dimensao)</th><th>Chave</th><th>Cardinalidade</th></tr>
+            <tr><td>FactSales</td><td>DimCostumer</td><td>CustomerKey</td><td>Muitos para Um (*:1)</td></tr>
+            <tr><td>FactSales</td><td>DimProduct</td><td>ProductKey</td><td>Muitos para Um (*:1)</td></tr>
+            <tr><td>FactSales</td><td>DimStore</td><td>StoreKey</td><td>Muitos para Um (*:1)</td></tr>
+            <tr><td>FactSales</td><td>DimDate</td><td>DateKey</td><td>Muitos para Um (*:1)</td></tr>
+        </table>
+        <div class="teoria" style="margin-top: 15px;">
+            <strong>Boas Praticas</strong>: Verificar se todas as relacoes sao de direcao unica (Single), se nao existem relacoes ambiguas, e se a tabela de datas esta marcada como "Date Table".
+        </div>
+    </section>
+
+    <!-- Medidas DAX -->
+    <section class="card">
+        <h2>2. Medidas DAX Essenciais</h2>
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'dax-vendas')">Vendas e Lucro</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'dax-tempo')">Inteligencia Temporal</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'dax-rankings')">Rankings e Top N</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'dax-avancado')">Medidas Avancadas</button>
+        </div>
+
+        <div id="dax-vendas" class="tab-content active">
+            <h3>Vendas, Lucro e Margens</h3>
+            <button data-copy="codeDaxVendas">Copiar medidas</button>
+            <pre id="codeDaxVendas">// Total de Vendas (Receita Bruta)
+Total Vendas = SUMX(FactSales, FactSales[QuantityKg] * FactSales[UnitPrice])
+
+// Lucro Total
+Lucro Total = SUM(FactSales[ProfitAmount])
+
+// Quantidade Total (Kg)
+Total Kg = SUM(FactSales[QuantityKg])
+
+// Margem de Lucro (%)
+Margem Lucro % = DIVIDE([Lucro Total], [Total Vendas], 0) * 100
+
+// Ticket Medio por Transacao
+Ticket Medio = DIVIDE([Total Vendas], COUNTROWS(FactSales), 0)
+
+// Desconto Total
+Total Desconto = SUM(FactSales[DiscountAmount])
+
+// Numero de Transacoes
+Nr Transacoes = COUNTROWS(FactSales)
+
+// Numero de Clientes Distintos
+Nr Clientes = DISTINCTCOUNT(FactSales[CustomerKey])</pre>
+        </div>
+
+        <div id="dax-tempo" class="tab-content">
+            <h3>Inteligencia Temporal (Time Intelligence)</h3>
+            <button data-copy="codeDaxTempo">Copiar medidas</button>
+            <pre id="codeDaxTempo">// Vendas do Ano Anterior (YoY)
+Vendas Ano Anterior = CALCULATE([Total Vendas], SAMEPERIODLASTYEAR(DimDate[Date]))
+
+// Variacao Anual (%)
+Variacao YoY % = DIVIDE(
+    [Total Vendas] - [Vendas Ano Anterior],
+    [Vendas Ano Anterior],
+    0
+) * 100
+
+// Vendas Acumuladas no Ano (YTD)
+Vendas YTD = TOTALYTD([Total Vendas], DimDate[Date])
+
+// Vendas do Mes Anterior
+Vendas Mes Anterior = CALCULATE([Total Vendas], PREVIOUSMONTH(DimDate[Date]))
+
+// Media Movel de 3 Meses
+Media Movel 3M = AVERAGEX(
+    DATESINPERIOD(DimDate[Date], MAX(DimDate[Date]), -3, MONTH),
+    [Total Vendas]
+)</pre>
+        </div>
+
+        <div id="dax-rankings" class="tab-content">
+            <h3>Rankings e Top N</h3>
+            <button data-copy="codeDaxRank">Copiar medidas</button>
+            <pre id="codeDaxRank">// Ranking de Produtos por Vendas
+Rank Produto = RANKX(
+    ALL(DimProduct[ProductName]),
+    [Total Vendas], , DESC, DENSE
+)
+
+// Ranking de Lojas por Lucro
+Rank Loja = RANKX(
+    ALL(DimStore[StoreName]),
+    [Lucro Total], , DESC, DENSE
+)
+
+// Top 5 Clientes (para usar em filtros visuais)
+Top 5 Clientes = IF(
+    RANKX(ALL(DimCostumer[CustomerName]), [Total Vendas], , DESC) <= 5,
+    [Total Vendas],
+    BLANK()
+)</pre>
+        </div>
+
+        <div id="dax-avancado" class="tab-content">
+            <h3>Medidas Avancadas e Condicionais</h3>
+            <button data-copy="codeDaxAdv">Copiar medidas</button>
+            <pre id="codeDaxAdv">// Classificacao de Vendas (Semaforo)
+Classificacao Venda =
+SWITCH(
+    TRUE(),
+    [Margem Lucro %] >= 30, "Alta",
+    [Margem Lucro %] >= 15, "Media",
+    "Baixa"
+)
+
+// Percentagem do Total Geral
+% do Total = DIVIDE(
+    [Total Vendas],
+    CALCULATE([Total Vendas], ALL(FactSales)),
+    0
+)
+
+// Vendas com Filtro de Contexto Removido
+Vendas Sem Filtro Produto = CALCULATE(
+    [Total Vendas],
+    REMOVEFILTERS(DimProduct)
+)</pre>
+        </div>
+    </section>
+
+    <!-- Power Query -->
+    <section class="card">
+        <h2>3. Power Query (ETL) - Passos Comuns</h2>
+        <div class="teoria">
+            O Power Query e usado para a ingestao e transformacao de dados antes de chegarem ao modelo. Passos tipicos na prova:
+        </div>
+        <ol>
+            <li><strong>Get Data &gt; Text/CSV</strong>: Importar os 5 ficheiros CSV.</li>
+            <li><strong>Delimiter</strong>: Selecionar <code>;</code> (ponto e virgula) para ficheiros europeus.</li>
+            <li><strong>Decimal Separator</strong>: Alterar para <code>,</code> (virgula) nas colunas numericas.</li>
+            <li><strong>Detect Data Type</strong>: Validar que colunas numericas nao ficaram como texto.</li>
+            <li><strong>Remove Duplicates</strong>: Aplicar nas tabelas dimensionais pelas chaves primarias.</li>
+            <li><strong>Replace Values</strong>: Substituir nulos em DiscountAmount por 0.</li>
+            <li><strong>Add Column &gt; Custom Column</strong>: Criar TotalGasto = [QuantityKg] * [UnitPrice].</li>
+            <li><strong>Close &amp; Apply</strong>: Carregar todas as tabelas para o modelo.</li>
+        </ol>
+    </section>
+
+    <!-- Boas práticas Dashboard -->
+    <section class="card">
+        <h2>4. Boas Praticas para Dashboards</h2>
+        <ul>
+            <li><strong>KPIs no topo</strong>: Cards com Total Vendas, Lucro, Nr Transacoes e Margem %.</li>
+            <li><strong>Grafico de barras</strong>: Top 10 produtos por vendas ou lucro.</li>
+            <li><strong>Grafico de linhas</strong>: Evolucao temporal de vendas (mensal/trimestral).</li>
+            <li><strong>Mapa</strong>: Vendas por localizacao de loja (se DimStore tiver coordenadas).</li>
+            <li><strong>Tabela/Matriz</strong>: Detalhe de vendas por produto e loja com drill-down.</li>
+            <li><strong>Slicers</strong>: Filtros por ano, trimestre, produto e loja.</li>
+            <li><strong>Formatacao condicional</strong>: Cores de semaforo na margem de lucro.</li>
+            <li><strong>Tooltips personalizados</strong>: Detalhes extras ao passar o rato sobre barras/pontos.</li>
+        </ul>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

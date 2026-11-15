@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente IA - Data Science & Power BI - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 920px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #d4a90a; color: #fff; }
+        
+        .card { padding: 18px; margin-bottom: 16px; border-left: 4px solid #d4a90a; border-radius: 6px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .card.discreet { border-left-color: #6c757d; }
+        .card.primary { border-left-color: #0d6efd; }
+        h1 { color: #d4a90a; font-size: 22px; margin: 0 0 14px 0; }
+        h2 { color: #d4a90a; font-size: 16px; margin: 0 0 10px 0; }
+        .back { display: inline-block; margin-bottom: 15px; padding: 6px 12px; border-radius: 4px; background: #d4a90a; color: #fff; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .back:hover { background: #b8920a; }
+        
+        /* Formulários compactos */
+        label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: bold; color: #444; }
+        input[type="text"], input[type="password"], select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13.5px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; min-height: 95px; line-height: 1.5; }
+        
+        .row-flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .row-flex input { flex: 1; min-width: 180px; }
+        
+        /* Botões */
+        button { padding: 6px 12px; border: 0; border-radius: 4px; background: #28a745; color: #fff; cursor: pointer; font-size: 13px; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        button.btn-blue { background: #0d6efd; }
+        button.btn-blue:hover { background: #0b5ed7; }
+        button.btn-secondary { background: #6c757d; }
+        button.btn-secondary:hover { background: #5a6268; }
+        button.btn-tag { background: #fdfaf0; color: #b8860b; border: 1px solid #f1e2b5; font-size: 12px; padding: 4px 8px; font-weight: 600; }
+        button.btn-tag:hover { background: #d4a90a; color: #fff; }
+        button.btn-attach { background: #f8f9fa; color: #495057; border: 1px solid #ced4da; font-size: 12px; padding: 4px 10px; font-weight: 600; }
+        button.btn-attach:hover { background: #e2e6ea; }
+        button.btn-download { background: #0d6efd; color: #fff; padding: 6px 12px; font-size: 12.5px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; transition: background .15s; }
+        button.btn-download:hover { background: #0b5ed7; }
+
+        /* Ficheiro discreto anexado */
+        .file-pill { display: inline-flex; align-items: center; gap: 6px; background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .file-pill button { background: transparent; color: #dc3545; border: none; padding: 0 3px; font-size: 14px; cursor: pointer; font-weight: bold; }
+        .file-pill button:hover { background: transparent; color: #a71d2a; }
+
+        /* Details / Configuração recolhível */
+        details { background: #fff; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
+        details summary { padding: 10px 15px; cursor: pointer; font-size: 13.5px; font-weight: bold; color: #b8860b; user-select: none; }
+        details[open] summary { border-bottom: 1px solid #eee; }
+        .details-body { padding: 15px; }
+
+        .param-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 8px; }
+        .param-item label { font-size: 12px; margin-bottom: 2px; }
+        .param-item input { font-size: 12.5px; padding: 5px 8px; }
+
+        .quick-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 12px 0; }
+
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+        .badge-success { background: #d1e7dd; color: #0f5132; }
+        .badge-warning { background: #fff3cd; color: #664d03; }
+
+        /* Código e mensagens */
+        pre { margin-top: 0; padding: 12px; overflow-x: auto; border-radius: 0 0 5px 5px; background: #1e1e1e; color: #d4d4d4; font: 12.5px/1.5 Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+        .code-box { margin: 12px 0; border-radius: 5px; overflow: hidden; border: 1px solid #2d2d2d; }
+        .code-bar { display: flex; justify-content: space-between; align-items: center; background: #2d2d2d; padding: 5px 10px; color: #aaa; font: 11px Consolas, monospace; }
+        .code-bar button { padding: 3px 8px; font-size: 11px; background: #198754; }
+        code { padding: 2px 5px; border-radius: 3px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; font-size: 12.5px; }
+        
+        .chat-history { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+        .msg { padding: 12px 15px; border-radius: 6px; font-size: 14px; line-height: 1.5; }
+        .msg-user { background: #f0f4f8; border: 1px solid #d0dbe5; align-self: flex-end; width: 95%; }
+        .msg-gemini { background: #fff; border: 1px solid #dee2e6; width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+        .msg-author { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #d4a90a; }
+        .loading { display: none; padding: 8px 0; font-size: 13px; font-weight: bold; color: #0d6efd; }
+        .loading.active { display: block; }
+        .notice-warning { padding: 8px 12px; border-left: 3px solid #ffc107; background: #fff3cd; border-radius: 3px; margin-top: 8px; font-size: 12px; color: #664d03; display: none; }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html" class="active">Assistente IA</a>
+    </nav>
+
+    <h1>Assistente Tecnico - Data Science &amp; Inteligência Artificial</h1>
+
+    <!-- PAINEL RECOLHÍVEL DE DEFINIÇÃO DE DATASETS E AMBIENTE -->
+    <details id="detailsInfra">
+        <summary>Configuração do Ambiente e Datasets da Prova (Clique para editar)</summary>
+        <div class="details-body">
+            <p style="margin-top: 0; font-size: 12.5px; color: #555;">Os códigos Python, fórmulas DAX e queries SQL gerados utilizam diretamente os seguintes ficheiros e parâmetros:</p>
+            <div class="param-grid">
+                <div class="param-item">
+                    <label for="dsVendas">Tabela Vendas (CSV):</label>
+                    <input type="text" id="dsVendas" value="data/FactSales.csv (sep=';', dec=',')">
+                </div>
+                <div class="param-item">
+                    <label for="dsClientes">Tabela Clientes (CSV):</label>
+                    <input type="text" id="dsClientes" value="data/DimCostumer.csv">
+                </div>
+                <div class="param-item">
+                    <label for="dsProdutos">Tabela Produtos (CSV):</label>
+                    <input type="text" id="dsProdutos" value="data/DimProduct.csv (sep=';', dec=',')">
+                </div>
+                <div class="param-item">
+                    <label for="dsLojas">Tabela Lojas &amp; Datas:</label>
+                    <input type="text" id="dsLojas" value="DimStore.csv / DimDate.csv">
+                </div>
+                <div class="param-item">
+                    <label for="sqlInstance">Servidor SQL (SQLEXPRESS):</label>
+                    <input type="text" id="sqlInstance" value="localhost\SQLEXPRESS (BD: FrutoseDB)">
+                </div>
+                <div class="param-item">
+                    <label for="mlThreshold">Limiar Alto Lucro (Classificação):</label>
+                    <input type="text" id="mlThreshold" value="ProfitAmount > 10">
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                <button type="button" onclick="guardarParametros()">Guardar Parâmetros</button>
+                <button type="button" class="btn-secondary" onclick="reporParametrosPadrao()">Repor Padrões</button>
+                <span id="savedParamNotice" style="display:none; font-size: 12px; color: #198754; align-self: center; font-weight: bold;">Parâmetros atualizados com sucesso!</span>
+            </div>
+        </div>
+    </details>
+
+    <!-- PAINEL RECOLHÍVEL DE CONFIGURAÇÃO DA CHAVE & MODELO -->
+    <details id="detailsKey">
+        <summary>Configuração da API Gemini (Chave e Modelo)</summary>
+        <div class="details-body">
+            <label for="apiKey">Gemini API Key:</label>
+            <div class="row-flex" style="margin-bottom: 10px;">
+                <input type="password" id="apiKey" placeholder="Cole aqui a sua API Key (ex: AIzaSy...)">
+                <button type="button" class="btn-secondary" onclick="alternarVisibilidade()">Mostrar/Ocultar</button>
+                <button type="button" onclick="salvarChave()">Guardar Chave</button>
+                <button type="button" class="btn-secondary" onclick="limparChave()">Remover</button>
+            </div>
+            <div class="row-flex" style="margin-bottom: 0;">
+                <div style="flex: 2; min-width: 220px;">
+                    <label for="modelSelect">Modelo:</label>
+                    <select id="modelSelect">
+                        <option value="gemini-3.1-flash-lite" selected>gemini-3.1-flash-lite (Recomendado - 500 pedidos/dia)</option>
+                        <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (500 pedidos/dia)</option>
+                        <option value="gemini-3.6-flash">gemini-3.6-flash (20 pedidos/dia)</option>
+                        <option value="gemini-3-flash">gemini-3-flash (20 pedidos/dia)</option>
+                        <option value="gemini-3.8-flash">gemini-3.8-flash (20 pedidos/dia)</option>
+                        <option value="gemini-4-hydrogen">gemini-4-hydrogen</option>
+                        <option value="gemma-4-26b">gemma-4-26b (14.400 pedidos/dia)</option>
+                        <option value="custom">Outro modelo...</option>
+                    </select>
+                    <input type="text" id="customModelInput" placeholder="Nome do modelo" style="display:none; margin-top:6px;">
+                </div>
+                <div style="padding-top: 20px; display: flex; gap: 6px; align-items: center;">
+                    <button type="button" class="btn-tag" onclick="carregarModelosDisponiveis()">Ler Modelos da Chave</button>
+                    <span id="keyBadge" class="badge badge-warning">Sem chave</span>
+                </div>
+            </div>
+            <div id="fallbackNotice" class="notice-warning"></div>
+        </div>
+    </details>
+
+    <!-- ÁREA PRINCIPAL DE PEDIDOS / COMANDOS -->
+    <section class="card primary">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="userPrompt" style="margin: 0;">Instrução ou Pedido Técnico (Data Science / BI):</label>
+            
+            <!-- BOTÃO PEQUENO E DISCRETO PARA ANEXAR PDF OU ENUNCIADO -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="file" id="fileInput" accept=".pdf,application/pdf,.txt,.log,.csv" style="display:none;" onchange="tratarSelecaoFicheiro(event)">
+                <button type="button" class="btn-attach" onclick="document.getElementById('fileInput').click()" title="Anexar PDF da prova ou dataset">+ Anexar PDF / Enunciado</button>
+                <span id="fileBadge" style="display:none;" class="file-pill">
+                    <span id="fileNameDisplay"></span>
+                    <button type="button" onclick="removerFicheiro()" title="Remover">&times;</button>
+                </span>
+            </div>
+        </div>
+
+        <textarea id="userPrompt" placeholder="Escreva o que pretende realizar (ex: 'Resolve o exercício de K-Means', 'Gera medidas DAX de vendas YoY', ou anexe um PDF para resolver os requisitos automaticamente)..."></textarea>
+
+        <div class="quick-tags">
+            <button type="button" class="btn-tag" style="background:#e7f1ff; color:#0d6efd; border-color:#b6d4fe;" onclick="preencherPrompt('Lê o PDF da prova em anexo e resolve com exatidão TODAS as tarefas de 1 a 49 sem saltar nenhuma, explicando passo a passo como fazer e apresentando os códigos exatos prontos a copiar.')">Resolver Todas as Tarefas (1 a 49)</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Lê o PDF da prova e resolve com exatidão todas as tarefas de Power Query e ETL (Tarefas 1 a 30), explicando passo a passo e dando os códigos M exatos.')">Power Query (Tarefas 1 a 30)</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Lê o PDF da prova e resolve as tarefas de Modelagem, Relações e Medidas DAX (Tarefas 31 a 41), apresentando a Tabela Datas e todas as fórmulas DAX organizadas por subpastas.')">Modelagem &amp; DAX (Tarefas 31 a 41)</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Lê o PDF da prova e explica como montar os 5 Dashboards pedidos nas Tarefas 42 a 47 (Visão Geral, Movimentos, Ruturas, Reposição e Drill-through Produto).')">Dashboards (Tarefas 42 a 49)</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Cria código Python para ler FactSales.csv (sep=;, dec=,), merge com DimCostumer e DimProduct, tratar nulos e criar TotalGasto = QuantityKg * UnitPrice.')">Ingestão &amp; Merge Frutose</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Segmenta clientes com K-Means (k=3) pelo TotalGasto e QuantityKg em Python. Inclui StandardScaler, Silhouette Score e gráfico scatter.')">K-Means &amp; Silhueta</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Modelo de Regressão Linear Múltipla em Python para prever ProfitAmount com QuantityKg, UnitPrice e DiscountPct. Calcula R² e RMSE.')">Regressão Linear Lucro</button>
+            <button type="button" class="btn-tag" onclick="preencherPrompt('Classificação de Alto Lucro (ProfitAmount > 10) com Árvore de Decisão e Random Forest. Avalia com classification_report e Feature Importance.')">Árvore &amp; Random Forest</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-blue" id="btnSend" onclick="enviarPedido()">Executar Pedido</button>
+            <button type="button" class="btn-secondary" onclick="limparHistorico()">Limpar</button>
+            <button type="button" class="btn-download" id="btnDownloadMain" style="display:none;" onclick="descarregarRespostasTXT()">Descarregar Respostas (.txt)</button>
+        </div>
+
+        <div id="loadingStatus" class="loading">A processar o pedido...</div>
+    </section>
+
+    <!-- HISTÓRICO DE RESPOSTAS -->
+    <section class="card" id="chatSection" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h2 style="margin: 0;">Respostas, Código e Fórmulas</h2>
+            <button type="button" class="btn-download" onclick="descarregarRespostasTXT()" title="Descarrega apenas as respostas do Gemini sem os pedidos">Descarregar Respostas (.txt)</button>
+        </div>
+        <div id="chatHistory" class="chat-history"></div>
+    </section>
+
+    <script>
+        const KEY_STORAGE = 'wsp27_ds_gemini_key';
+        const PARAM_STORAGE = 'wsp27_ds_params';
+
+        const DEFAULT_PARAMS = {
+            vendas: "data/FactSales.csv (sep=';', dec=',')",
+            clientes: "data/DimCostumer.csv",
+            produtos: "data/DimProduct.csv (sep=';', dec=',')",
+            lojas: "DimStore.csv / DimDate.csv",
+            sql: "localhost\\SQLEXPRESS (BD: FrutoseDB)",
+            threshold: "ProfitAmount > 10"
+        };
+
+        let historicoConversa = [];
+        let ficheiroCarregado = null; // { name, size, mimeType, base64 }
+
+        const MODEL_FALLBACK_LIST = [
+            'gemini-3.1-flash-lite',
+            'gemini-3.5-flash-lite',
+            'gemini-3.6-flash',
+            'gemini-3-flash',
+            'gemini-3.8-flash',
+            'gemini-4-hydrogen'
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const guardada = localStorage.getItem(KEY_STORAGE);
+            if (guardada) {
+                document.getElementById('apiKey').value = guardada;
+                atualizarBadge(true);
+            } else {
+                atualizarBadge(false);
+                document.getElementById('detailsKey').open = true;
+            }
+
+            carregarParametros();
+
+            document.getElementById('modelSelect').addEventListener('change', (e) => {
+                const customInput = document.getElementById('customModelInput');
+                if (e.target.value === 'custom') {
+                    customInput.style.display = 'block';
+                    customInput.focus();
+                } else {
+                    customInput.style.display = 'none';
+                }
+            });
+        });
+
+        function carregarParametros() {
+            const salvos = localStorage.getItem(PARAM_STORAGE);
+            const params = salvos ? JSON.parse(salvos) : DEFAULT_PARAMS;
+            document.getElementById('dsVendas').value = params.vendas || DEFAULT_PARAMS.vendas;
+            document.getElementById('dsClientes').value = params.clientes || DEFAULT_PARAMS.clientes;
+            document.getElementById('dsProdutos').value = params.produtos || DEFAULT_PARAMS.produtos;
+            document.getElementById('dsLojas').value = params.lojas || DEFAULT_PARAMS.lojas;
+            document.getElementById('sqlInstance').value = params.sql || DEFAULT_PARAMS.sql;
+            document.getElementById('mlThreshold').value = params.threshold || DEFAULT_PARAMS.threshold;
+        }
+
+        function guardarParametros() {
+            const params = {
+                vendas: document.getElementById('dsVendas').value.trim() || DEFAULT_PARAMS.vendas,
+                clientes: document.getElementById('dsClientes').value.trim() || DEFAULT_PARAMS.clientes,
+                produtos: document.getElementById('dsProdutos').value.trim() || DEFAULT_PARAMS.produtos,
+                lojas: document.getElementById('dsLojas').value.trim() || DEFAULT_PARAMS.lojas,
+                sql: document.getElementById('sqlInstance').value.trim() || DEFAULT_PARAMS.sql,
+                threshold: document.getElementById('mlThreshold').value.trim() || DEFAULT_PARAMS.threshold
+            };
+            localStorage.setItem(PARAM_STORAGE, JSON.stringify(params));
+            const aviso = document.getElementById('savedParamNotice');
+            aviso.style.display = 'inline';
+            setTimeout(() => { aviso.style.display = 'none'; }, 2000);
+        }
+
+        function reporParametrosPadrao() {
+            localStorage.removeItem(PARAM_STORAGE);
+            carregarParametros();
+            alert('Parâmetros repostos para os padrões da prova Frutose.');
+        }
+
+        function obterSystemPrompt() {
+            const p = {
+                vendas: document.getElementById('dsVendas').value.trim() || DEFAULT_PARAMS.vendas,
+                clientes: document.getElementById('dsClientes').value.trim() || DEFAULT_PARAMS.clientes,
+                produtos: document.getElementById('dsProdutos').value.trim() || DEFAULT_PARAMS.produtos,
+                lojas: document.getElementById('dsLojas').value.trim() || DEFAULT_PARAMS.lojas,
+                sql: document.getElementById('sqlInstance').value.trim() || DEFAULT_PARAMS.sql,
+                threshold: document.getElementById('mlThreshold').value.trim() || DEFAULT_PARAMS.threshold
+            };
+
+            return `Voce e um assistente de elite especialista em Data Science, Machine Learning, Power BI, DAX, Linguagem M, Scikit-Learn e SQL Server para o Campeonato Nacional das Profissoes WorldSkills Portugal (Profissao P21).
+
+AMBIENTE E BASES DE DADOS DA PROVA:
+- Instancia SQL: ${p.sql}
+- Tabelas: DimPolos, DimProdutos, DimRegioes, DimCategoriasProduto, FacStockPolo, FacMovimentosStock, FacRupturasStock (ou datasets Frutose).
+
+REGRA DE OURO - RESOLUCAO DE PROVAS E DOCUMENTOS (OBRIGATORIO):
+1. NUNCA OMITE, SALTE OU RESUMA TAREFAS. Se o documento contem tarefas numeradas (ex.: Tarefas 1 a 49), VOCE DEVE RESOLVER CADA UMA DELAS SEQUENCIALMENTE DE FORMA EXAUSTIVA.
+2. Para CADA tarefa identificada no documento, apresente obrigatoriamente:
+   - Numero e Nome da Tarefa;
+   - Onde executar (Power Query / Editor Avancado M, Vista de Modelo, Nova Medida DAX, SQL Server SSMS ou Vista de Relatorio);
+   - Procedimento passo a passo claro e explicativo;
+   - Codigo/Formula exata pronta a copiar (em bloco de codigo formatado).
+3. Nunca utilize emojis nas respostas.
+4. Mantenha as formulas DAX de alto rendimento (DIVIDE, CALCULATE com Time Intelligence, sem comparacoes vazias lentas).`;
+        }
+
+        function tratarSelecaoFicheiro(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const base64 = dataUrl.split(',')[1];
+                    let mime = file.type;
+                    if (!mime) {
+                        if (file.name.endsWith('.pdf')) mime = 'application/pdf';
+                        else if (file.name.endsWith('.csv')) mime = 'text/csv';
+                        else if (file.name.endsWith('.txt') || file.name.endsWith('.log')) mime = 'text/plain';
+                        else mime = 'application/octet-stream';
+                    }
+                    ficheiroCarregado = {
+                        name: file.name,
+                        size: file.size,
+                        mimeType: mime,
+                        base64: base64
+                    };
+                    document.getElementById('fileNameDisplay').textContent = file.name;
+                    document.getElementById('fileBadge').style.display = 'inline-flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removerFicheiro() {
+            ficheiroCarregado = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileBadge').style.display = 'none';
+        }
+
+        function atualizarBadge(ativa) {
+            const b = document.getElementById('keyBadge');
+            if (ativa) {
+                b.className = 'badge badge-success';
+                b.textContent = 'Chave ativa';
+            } else {
+                b.className = 'badge badge-warning';
+                b.textContent = 'Sem chave';
+            }
+        }
+
+        function salvarChave() {
+            const chave = document.getElementById('apiKey').value.trim();
+            if (!chave) {
+                alert('Insira uma chave valida.');
+                return;
+            }
+            localStorage.setItem(KEY_STORAGE, chave);
+            atualizarBadge(true);
+            alert('Chave guardada com sucesso.');
+        }
+
+        function limparChave() {
+            localStorage.removeItem(KEY_STORAGE);
+            document.getElementById('apiKey').value = '';
+            atualizarBadge(false);
+            alert('Chave removida.');
+        }
+
+        function alternarVisibilidade() {
+            const input = document.getElementById('apiKey');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function preencherPrompt(txt) {
+            const area = document.getElementById('userPrompt');
+            area.value = txt;
+            area.focus();
+        }
+
+        function limparHistorico() {
+            historicoConversa = [];
+            document.getElementById('chatHistory').innerHTML = '';
+            document.getElementById('chatSection').style.display = 'none';
+            const btnMain = document.getElementById('btnDownloadMain');
+            if (btnMain) btnMain.style.display = 'none';
+            document.getElementById('userPrompt').value = '';
+            document.getElementById('fallbackNotice').style.display = 'none';
+            removerFicheiro();
+        }
+
+        async function carregarModelosDisponiveis() {
+            const chave = document.getElementById('apiKey').value.trim() || localStorage.getItem(KEY_STORAGE);
+            if (!chave) {
+                alert('Insira a API Key antes de carregar modelos.');
+                return;
+            }
+
+            const badge = document.getElementById('keyBadge');
+            badge.className = 'badge badge-warning';
+            badge.textContent = 'A ler...';
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${chave}`;
+                const res = await fetch(url);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error?.message || res.statusText);
+                }
+                const data = await res.json();
+                const modelos = data.models || [];
+                const modelosGeracao = modelos.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+
+                if (modelosGeracao.length > 0) {
+                    const select = document.getElementById('modelSelect');
+                    select.innerHTML = '';
+                    modelosGeracao.forEach(m => {
+                        const cleanName = m.name.replace('models/', '');
+                        const opt = document.createElement('option');
+                        opt.value = cleanName;
+                        opt.textContent = `${m.displayName || cleanName} (${cleanName})`;
+                        if (cleanName === 'gemini-3.1-flash-lite' || cleanName === 'gemini-3.8-flash') {
+                            opt.selected = true;
+                        }
+                        select.appendChild(opt);
+                    });
+                    const optCustom = document.createElement('option');
+                    optCustom.value = 'custom';
+                    optCustom.textContent = 'Outro modelo...';
+                    select.appendChild(optCustom);
+
+                    badge.className = 'badge badge-success';
+                    badge.textContent = `${modelosGeracao.length} modelos`;
+                    alert(`${modelosGeracao.length} modelos carregados com sucesso!`);
+                }
+            } catch (e) {
+                badge.className = 'badge badge-warning';
+                badge.textContent = 'Erro';
+                alert('Erro ao carregar modelos: ' + e.message);
+            }
+        }
+
+        function obterModeloAtual() {
+            const selectVal = document.getElementById('modelSelect').value;
+            if (selectVal === 'custom') {
+                return document.getElementById('customModelInput').value.trim() || 'gemini-3.1-flash-lite';
+            }
+            return selectVal;
+        }
+
+        async function enviarPedido() {
+            const chave = document.getElementById('apiKey').value.trim() || localStorage.getItem(KEY_STORAGE);
+            let prompt = document.getElementById('userPrompt').value.trim();
+
+            if (!chave) {
+                alert('Defina primeiro a Gemini API Key na seccao de configuracao.');
+                document.getElementById('detailsKey').open = true;
+                document.getElementById('apiKey').focus();
+                return;
+            }
+
+            if (!prompt && !ficheiroCarregado) {
+                alert('Escreva uma instrucao ou anexe um ficheiro.');
+                document.getElementById('userPrompt').focus();
+                return;
+            }
+
+            if (!prompt && ficheiroCarregado) {
+                prompt = 'Lê minuciosamente o documento da prova em anexo. Identifica e resolve com exatidão TODAS as tarefas numeradas propostas (sem saltar nenhuma, da primeira à última). Para cada tarefa, explica passo a passo onde clicar e apresenta o código exato (Linguagem M, DAX, SQL ou Python) pronto a copiar.';
+            }
+
+            const btn = document.getElementById('btnSend');
+            const loader = document.getElementById('loadingStatus');
+            const chatSection = document.getElementById('chatSection');
+            const fallbackNotice = document.getElementById('fallbackNotice');
+
+            btn.disabled = true;
+            loader.className = 'loading active';
+            chatSection.style.display = 'block';
+            fallbackNotice.style.display = 'none';
+
+            const partesUsuario = [];
+            let nomeFicheiroAnexo = null;
+
+            if (ficheiroCarregado) {
+                partesUsuario.push({
+                    inlineData: {
+                        mimeType: ficheiroCarregado.mimeType,
+                        data: ficheiroCarregado.base64
+                    }
+                });
+                nomeFicheiroAnexo = ficheiroCarregado.name;
+            }
+
+            partesUsuario.push({ text: prompt });
+
+            adicionarMensagem('Voce', prompt, 'msg-user', false, nomeFicheiroAnexo);
+            document.getElementById('userPrompt').value = '';
+
+            const ficheiroParaEnviar = ficheiroCarregado;
+            removerFicheiro();
+
+            const novasMensagens = [...historicoConversa, {
+                role: 'user',
+                parts: partesUsuario
+            }];
+
+            const modeloInicial = obterModeloAtual();
+            const filaModelos = [modeloInicial, ...MODEL_FALLBACK_LIST.filter(m => m !== modeloInicial)];
+
+            const systemPromptAtual = obterSystemPrompt();
+
+            let respostaSucesso = null;
+            let ultimoErro = null;
+            let modeloUtilizado = modeloInicial;
+
+            for (let i = 0; i < filaModelos.length; i++) {
+                const modeloAtual = filaModelos[i];
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modeloAtual}:generateContent?key=${chave}`;
+
+                const payload = {
+                    contents: novasMensagens,
+                    systemInstruction: {
+                        parts: [{ text: systemPromptAtual }]
+                    }
+                };
+
+                try {
+                    let res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Se der erro 400 por systemInstruction nao suportada, tenta com fallback no prompt do user
+                    if (res.status === 400) {
+                        const fallbackPayload = {
+                            contents: [
+                                {
+                                    role: 'user',
+                                    parts: [
+                                        ...(ficheiroParaEnviar ? [{ inlineData: { mimeType: ficheiroParaEnviar.mimeType, data: ficheiroParaEnviar.base64 } }] : []),
+                                        { text: `[CONTEXTO DO SISTEMA E DATASETS]\n${systemPromptAtual}\n\n[PEDIDO DO UTILIZADOR]\n${prompt}` }
+                                    ]
+                                }
+                            ]
+                        };
+                        res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(fallbackPayload)
+                        });
+                    }
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        const textoResposta = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (textoResposta) {
+                            respostaSucesso = textoResposta;
+                            modeloUtilizado = modeloAtual;
+                            break;
+                        }
+                    }
+
+                    const erroJson = await res.json().catch(() => ({}));
+                    const mensagemErro = erroJson.error?.message || res.statusText;
+                    ultimoErro = `Modelo ${modeloAtual} falhou (${res.status}): ${mensagemErro}`;
+
+                    if (res.status === 429 || res.status === 404 || res.status === 503) {
+                        if (i + 1 < filaModelos.length) {
+                            fallbackNotice.style.display = 'block';
+                            fallbackNotice.textContent = `Aviso: O modelo ${modeloAtual} retornou erro (${res.status}). A tentar com ${filaModelos[i+1]}...`;
+                            continue;
+                        }
+                    } else {
+                        break;
+                    }
+                } catch (networkErr) {
+                    ultimoErro = networkErr.message;
+                    break;
+                }
+            }
+
+            if (respostaSucesso) {
+                historicoConversa.push({ role: 'user', parts: partesUsuario });
+                historicoConversa.push({ role: 'model', parts: [{ text: respostaSucesso }] });
+
+                const btnMain = document.getElementById('btnDownloadMain');
+                if (btnMain) btnMain.style.display = 'inline-flex';
+
+                if (modeloUtilizado !== modeloInicial) {
+                    fallbackNotice.style.display = 'block';
+                    fallbackNotice.textContent = `Nota: Resposta gerada atraves de ${modeloUtilizado} (o modelo ${modeloInicial} estava indisponivel ou com quota esgotada).`;
+                }
+
+                adicionarMensagem(`Gemini (${modeloUtilizado})`, respostaSucesso, 'msg-gemini');
+            } else {
+                adicionarMensagem('Erro', ultimoErro || 'Nao foi possivel obter resposta dos modelos.', 'msg-gemini', true);
+            }
+
+            btn.disabled = false;
+            loader.className = 'loading';
+        }
+
+        function adicionarMensagem(autor, texto, classe, isError = false, anexo = null) {
+            const container = document.getElementById('chatHistory');
+            const cardMsg = document.createElement('div');
+            cardMsg.className = `msg ${classe}`;
+
+            const authorDiv = document.createElement('div');
+            authorDiv.className = 'msg-author';
+            authorDiv.style.display = 'flex';
+            authorDiv.style.justifyContent = 'space-between';
+            authorDiv.style.alignItems = 'center';
+
+            const authorSpan = document.createElement('span');
+            authorSpan.textContent = autor;
+            authorDiv.appendChild(authorSpan);
+
+            if (classe === 'msg-gemini' && !isError) {
+                const btnSaveSingle = document.createElement('button');
+                btnSaveSingle.type = 'button';
+                btnSaveSingle.textContent = 'Guardar .txt';
+                btnSaveSingle.title = 'Descarregar apenas esta resposta em TXT';
+                btnSaveSingle.style.fontSize = '11.5px';
+                btnSaveSingle.style.padding = '2px 8px';
+                btnSaveSingle.style.background = '#0d6efd';
+                btnSaveSingle.onclick = () => descarregarTextoIndividual(texto);
+                authorDiv.appendChild(btnSaveSingle);
+            }
+
+            cardMsg.appendChild(authorDiv);
+
+            if (anexo) {
+                const anexoSpan = document.createElement('div');
+                anexoSpan.className = 'file-pill';
+                anexoSpan.style.marginBottom = '6px';
+                anexoSpan.textContent = `Anexo: ${anexo}`;
+                cardMsg.appendChild(anexoSpan);
+            }
+
+            if (isError) {
+                const errDiv = document.createElement('div');
+                errDiv.style.color = '#dc3545';
+                errDiv.style.fontWeight = 'bold';
+                errDiv.textContent = texto;
+                cardMsg.appendChild(errDiv);
+            } else if (classe === 'msg-user') {
+                const p = document.createElement('p');
+                p.style.margin = '0';
+                p.textContent = texto;
+                cardMsg.appendChild(p);
+            } else {
+                formatarRespostaGemini(cardMsg, texto);
+            }
+
+            container.appendChild(cardMsg);
+            cardMsg.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function formatarRespostaGemini(container, texto) {
+            const regex = /```([a-zA-Z0-9_\-\.]*)\n([\s\S]*?)```/g;
+            let ultimoIndice = 0;
+            let match;
+
+            while ((match = regex.exec(texto)) !== null) {
+                const textoAnterior = texto.substring(ultimoIndice, match.index);
+                if (textoAnterior.trim()) {
+                    container.appendChild(criarParagrafos(textoAnterior));
+                }
+
+                const lang = match[1] || 'CODIGO';
+                const codigo = match[2];
+
+                container.appendChild(criarBlocoCodigo(lang, codigo));
+                ultimoIndice = match.index + match[0].length;
+            }
+
+            const resto = texto.substring(ultimoIndice);
+            if (resto.trim()) {
+                container.appendChild(criarParagrafos(resto));
+            }
+        }
+
+        function criarParagrafos(str) {
+            const wrapper = document.createElement('div');
+            const linhas = str.split('\n');
+            let html = '';
+
+            for (let l of linhas) {
+                let s = escapeHtml(l);
+                if (s.startsWith('### ')) {
+                    html += `<h3 style="margin: 10px 0 4px 0; color: #d4a90a; font-size: 15px;">${s.substring(4)}</h3>`;
+                } else if (s.startsWith('## ')) {
+                    html += `<h2 style="margin: 12px 0 6px 0; color: #d4a90a; font-size: 16px;">${s.substring(3)}</h2>`;
+                } else if (s.startsWith('# ')) {
+                    html += `<h1 style="margin: 14px 0 8px 0; color: #d4a90a; font-size: 18px;">${s.substring(2)}</h1>`;
+                } else if (s.startsWith('* ') || s.startsWith('- ')) {
+                    html += `<div style="margin-left: 12px; margin-bottom: 3px;">&bull; ${s.substring(2)}</div>`;
+                } else if (s.trim() === '') {
+                    html += '<div style="height: 4px;"></div>';
+                } else {
+                    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+                    html += `<p style="margin: 0 0 5px 0;">${s}</p>`;
+                }
+            }
+            wrapper.innerHTML = html;
+            return wrapper;
+        }
+
+        function criarBlocoCodigo(lang, codigo) {
+            const wrap = document.createElement('div');
+            wrap.className = 'code-box';
+
+            const bar = document.createElement('div');
+            bar.className = 'code-bar';
+            bar.innerHTML = `<span>${escapeHtml(lang.toUpperCase())}</span>`;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'Copiar';
+            btn.onclick = async () => {
+                await navigator.clipboard.writeText(codigo);
+                const prev = btn.textContent;
+                btn.textContent = 'Copiado';
+                setTimeout(() => { btn.textContent = prev; }, 1200);
+            };
+
+            bar.appendChild(btn);
+
+            const pre = document.createElement('pre');
+            pre.textContent = codigo;
+
+            wrap.appendChild(bar);
+            wrap.appendChild(pre);
+            return wrap;
+        }
+
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.innerText = text;
+            return d.innerHTML;
+        }
+
+        // DESCARREGAR APENAS AS RESPOSTAS GERADAS (FORMATO r1:, r2:, etc.)
+        function descarregarRespostasTXT() {
+            const respostas = historicoConversa
+                .filter(item => item.role === 'model')
+                .map(item => item.parts.map(p => p.text).join('\n'))
+                .filter(t => t && t.trim().length > 0);
+
+            if (respostas.length === 0) {
+                alert('Ainda não existem respostas geradas para descarregar.');
+                return;
+            }
+
+            // Apenas as respostas, sem cabeçalhos adicionais, prefixadas por r1:, r2:, etc.
+            const conteudoCompleto = respostas.map((resp, index) => {
+                return `r${index + 1}:\n${resp.trim()}`;
+            }).join('\n\n\n');
+
+            const blob = new Blob([conteudoCompleto], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dataHora = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.href = url;
+            a.download = `respostas_${dataHora}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function descarregarTextoIndividual(texto) {
+            const conteudo = `r:\n${texto.trim()}`;
+            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dataHora = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.href = url;
+            a.download = `resposta_${dataHora}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python: Ingestao e Preparacao - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #306998; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2 { color: #306998; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #306998; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #244e78; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #306998; background: #e8f0fe; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #1a3a5c; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #306998; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #306998; color: #fff; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html" class="active">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>Python: Ingestao e Preparacao de Dados</h1>
+
+    <!-- SECÇÃO 1: Ambiente -->
+    <section class="card">
+        <h2>1. Ambiente de Trabalho e Instalacao</h2>
+        <div class="teoria">
+            O ambiente da prova inclui Visual Studio Code configurado com Python e Anaconda. Antes de comecar, garantir que as bibliotecas essenciais estao instaladas.
+        </div>
+        <button data-copy="codeInstall">Copiar comando</button>
+        <pre id="codeInstall">pip install numpy pandas scipy scikit-learn matplotlib seaborn jupyter</pre>
+        <h3 style="color:#306998; margin-top:15px;">Justificacao dos Pacotes</h3>
+        <ul>
+            <li><code>numpy</code>: Matrizes multidimensionais e operacoes vetorizadas de algebra linear.</li>
+            <li><code>pandas</code>: Manipulacao estruturada de dados via DataFrames (ingestao, filtragem, merge).</li>
+            <li><code>scipy</code>: Clustering hierarquico (Single Linkage, Complete Linkage) e dendrogramas.</li>
+            <li><code>scikit-learn</code>: Algoritmos de ML (K-Means, Decision Trees, Random Forest, Regressoes) e metricas.</li>
+            <li><code>matplotlib</code> e <code>seaborn</code>: Visualizacoes estatisticas (dispersoes, matrizes de correlacao).</li>
+            <li><code>jupyter</code>: Interface interativa em notebooks para desenvolvimento modular.</li>
+        </ul>
+    </section>
+
+    <!-- SECÇÃO 2: Ingestão CSV -->
+    <section class="card">
+        <h2>2. Ingestao de Dados (Leitura de CSV)</h2>
+        <div class="teoria">
+            O Descritivo Tecnico exige "Importacao de dados" como competencia avaliada. Os ficheiros fornecidos sao <code>FactSales.csv</code>, <code>DimCostumer.csv</code>, <code>DimProduct.csv</code>, <code>DimStore.csv</code> e <code>DimDate.csv</code> (dados de retalho de fruta do grupo Frutose). Atentar ao separador (<code>;</code>) e ao separador decimal (<code>,</code>) tipicos de ficheiros CSV europeus.
+        </div>
+        <button data-copy="codeIngest">Copiar codigo</button>
+        <pre id="codeIngest">import pandas as pd
+
+# Leitura com separador europeu (;) e decimal (,)
+df_sales = pd.read_csv('data/FactSales.csv', sep=';', decimal=',')
+df_customers = pd.read_csv('data/DimCostumer.csv')
+df_products = pd.read_csv('data/DimProduct.csv', sep=';', decimal=',')
+df_stores = pd.read_csv('data/DimStore.csv')
+df_dates = pd.read_csv('data/DimDate.csv')
+
+# Verificacao rapida da estrutura
+print(df_sales.shape)
+print(df_sales.dtypes)
+print(df_sales.head())</pre>
+    </section>
+
+    <!-- SECÇÃO 3: Merge -->
+    <section class="card">
+        <h2>3. Reconstrucao de Dados (Merge / Join)</h2>
+        <div class="teoria">
+            A competencia "Reconstrucao de dados" exige a juncao de tabelas dimensionais com a tabela de factos, formando um unico DataFrame analitico pronto para modelacao.
+        </div>
+        <button data-copy="codeMerge">Copiar codigo</button>
+        <pre id="codeMerge"># Juntar Vendas com Clientes e Produtos pelas chaves de ligacao
+df_merged = df_sales.merge(df_customers, on='CustomerKey', how='left')
+df_merged = df_merged.merge(df_products, on='ProductKey', how='left')
+df_merged = df_merged.merge(df_stores, on='StoreKey', how='left')
+
+print(f"Linhas: {df_merged.shape[0]}, Colunas: {df_merged.shape[1]}")
+print(df_merged.head())</pre>
+    </section>
+
+    <!-- SECÇÃO 4: Tratamento de Nulos -->
+    <section class="card">
+        <h2>4. Tratamento de Valores Nulos</h2>
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'nulos-fillna')">fillna() - Preencher</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'nulos-interpol')">interpolate() - Interpolar</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'nulos-dropna')">dropna() - Eliminar</button>
+        </div>
+        <div id="nulos-fillna" class="tab-content active">
+            <div class="teoria">
+                <strong>fillna()</strong>: Substitui valores nulos por um valor fixo (0, media, mediana). Usar quando a ausencia tem significado logico (ex: desconto nulo = sem desconto).
+            </div>
+            <button data-copy="codeFillna">Copiar codigo</button>
+            <pre id="codeFillna"># Verificar nulos por coluna
+print(df_merged.isnull().sum())
+
+# Preencher desconto nulo com 0 (sem desconto)
+if 'DiscountAmount' in df_merged.columns:
+    df_merged['DiscountAmount'] = df_merged['DiscountAmount'].fillna(0)
+
+# Preencher com a media da coluna
+df_merged['UnitPrice'] = df_merged['UnitPrice'].fillna(df_merged['UnitPrice'].mean())</pre>
+        </div>
+        <div id="nulos-interpol" class="tab-content">
+            <div class="teoria">
+                <strong>Interpolacao Linear</strong>: Em series temporais ou registos sequenciais, a perda de dados nao deve ser tratada eliminando linhas (destroi a continuidade). A interpolacao estima os valores omissos tracando uma reta entre os valores conhecidos adjacentes.
+            </div>
+            <button data-copy="codeInterpol">Copiar codigo</button>
+            <pre id="codeInterpol">import numpy as np
+
+# Dados de exemplo com falhas
+dados_loja = {
+    "Dia": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "Clientes_Loja": [120, 135, np.nan, 150, 160, np.nan, 180, 190, 210, 225],
+    "Preco_Medio": [2.5, 2.6, 2.4, np.nan, 2.8, 2.9, 3.0, 3.1, 3.0, 3.2],
+    "Valor_Liquido": [300, 350, np.nan, 410, 440, 490, 520, 580, 620, 710],
+}
+
+df = pd.DataFrame(dados_loja)
+print("--- Antes (com nulos) ---")
+print(df)
+
+# Interpolacao linear: estima valores entre pontos conhecidos
+df_reconstruido = df.interpolate(method="linear")
+print("\n--- Depois (interpolado) ---")
+print(df_reconstruido)</pre>
+        </div>
+        <div id="nulos-dropna" class="tab-content">
+            <div class="teoria">
+                <strong>dropna()</strong>: Remove linhas com valores nulos. Usar apenas quando a percentagem de nulos e muito pequena e nao compromete a amostra.
+            </div>
+            <button data-copy="codeDropna">Copiar codigo</button>
+            <pre id="codeDropna"># Remover linhas com QUALQUER nulo
+df_limpo = df_merged.dropna()
+
+# Remover apenas linhas com nulo em colunas especificas
+df_limpo = df_merged.dropna(subset=['QuantityKg', 'UnitPrice', 'ProfitAmount'])
+
+print(f"Antes: {df_merged.shape[0]} linhas | Depois: {df_limpo.shape[0]} linhas")</pre>
+        </div>
+    </section>
+
+    <!-- SECÇÃO 5: Feature Engineering -->
+    <section class="card">
+        <h2>5. Transformacao de Dados (Feature Engineering)</h2>
+        <div class="teoria">
+            A competencia "Transformacao de dados" inclui criar novas colunas derivadas das existentes. E essencial para alimentar os modelos de ML com variaveis mais informativas.
+        </div>
+        <button data-copy="codeFeature">Copiar codigo</button>
+        <pre id="codeFeature"># Criar coluna TotalGasto (Quantidade * Preco)
+df_merged['TotalGasto'] = df_merged['QuantityKg'] * df_merged['UnitPrice']
+
+# Criar variavel binaria para classificacao (Alto Lucro: > 10€)
+df_merged['AltoLucro'] = (df_merged['ProfitAmount'] > 10).astype(int)
+
+# Agrupar por cliente para segmentacao
+customer_behavior = df_merged.groupby('CustomerKey').agg({
+    'TotalGasto': 'sum',
+    'QuantityKg': 'sum'
+}).reset_index()
+
+print(customer_behavior.head())</pre>
+    </section>
+
+    <!-- SECÇÃO 6: Correlação e RFE -->
+    <section class="card">
+        <h2>6. Correlacao de Pearson e Selecao de Atributos (RFE)</h2>
+        <div class="teoria">
+            <strong>Correlacao de Pearson</strong>: Mede a associacao linear entre variaveis continuas (-1 a +1).<br>
+            <strong>RFE (Recursive Feature Elimination)</strong>: Treina recursivamente um modelo e descarta as variaveis menos relevantes. O Descritivo exige "selecao analitica de melhores subconjuntos".
+        </div>
+        <button data-copy="codeRFE">Copiar codigo</button>
+        <pre id="codeRFE">from sklearn.feature_selection import RFE
+from sklearn.linear_model import LinearRegression
+
+# Matriz de correlacao
+matriz_correlacao = df_reconstruido.corr(method="pearson")
+print("--- Matriz de Correlacao de Pearson ---")
+print(matriz_correlacao.round(3))
+
+# Selecao de atributos com RFE
+X = df_reconstruido[["Dia", "Clientes_Loja", "Preco_Medio", "Desconto_Pct"]]
+y = df_reconstruido["Valor_Liquido"]
+
+modelo_estimador = LinearRegression()
+seletor = RFE(estimator=modelo_estimador, n_features_to_select=3)
+seletor.fit(X, y)
+
+atributos_escolhidos = X.columns[seletor.support_].tolist()
+print(f"\nVariaveis selecionadas pelo RFE: {atributos_escolhidos}")
+for coluna, rank in zip(X.columns, seletor.ranking_):
+    print(f"Variavel: {coluna:<15} | Ranking: {rank}")</pre>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

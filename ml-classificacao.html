@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML: Classificacao - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #f2c811; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #d4a90a; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #d4a90a; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #b8920a; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #f2c811; background: #fef9e7; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #5a4a0a; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #d4a90a; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #d4a90a; color: #fff; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html" class="active">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>ML: Classificacao (Arvores de Decisao e Random Forest)</h1>
+
+    <!-- Teoria -->
+    <section class="card">
+        <h2>Enquadramento Teorico</h2>
+        <div class="teoria">
+            O Descritivo Tecnico exige <strong>"Arvores de decisao ou random forest"</strong>. Esta pagina cobre ambos com exemplos aplicados aos dados da Frutose e dados sinteticos.
+        </div>
+        <ul>
+            <li><strong>Arvore de Decisao</strong>: Modelo nao parametrico baseado em regras se-entao (if-then) que particiona recursivamente o espaco com base em criterios de pureza (Gini ou Entropia).</li>
+            <li><strong>Random Forest</strong>: Tecnica de ensemble (bagging) que treina multiplas arvores sobre sub-amostras aleatorias. Reduz variancia e previne overfitting.</li>
+            <li><strong>Matriz de Confusao</strong>: Cruza valores reais e previstos, discriminando TP, FP, TN, FN.</li>
+            <li><strong>F1-Score</strong>: Media harmonica entre Precision e Recall. Metrica fiavel para dados desbalanceados.</li>
+            <li><strong>Feature Importance</strong>: Peso relativo de cada variavel na capacidade preditiva do modelo.</li>
+        </ul>
+    </section>
+
+    <!-- Exercício com dados Frutose -->
+    <section class="card">
+        <h2>1. Classificacao "Alto Lucro" (Dados Frutose)</h2>
+        <div class="teoria">
+            Cenario de prova: Apoiar campanhas focadas em produtos de alto valor. Prever se uma transacao sera de "Alto Lucro" (Lucro &gt; 10EUR) com base nas caracteristicas do produto.
+        </div>
+        <button data-copy="codeFrutose">Copiar codigo</button>
+        <pre id="codeFrutose">import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report
+
+# 1. Ingestao e merge (assumindo df_merged ja criado)
+df_sales = pd.read_csv('data/FactSales.csv', sep=';', decimal=',')
+df_products = pd.read_csv('data/DimProduct.csv', sep=';', decimal=',')
+df_merged = df_sales.merge(df_products, on='ProductKey', how='left')
+
+# 2. Criar variavel alvo (Feature Engineering)
+df_merged['AltoLucro'] = (df_merged['ProfitAmount'] > 10).astype(int)
+
+# 3. Selecao de atributos
+features = ['QuantityKg', 'UnitPrice', 'StandardCost']
+df_class = df_merged.dropna(subset=features + ['AltoLucro'])
+
+X = df_class[features]
+y = df_class['AltoLucro']
+
+# 4. Divisao treino/teste (70/30)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=123)
+
+# 5. Treino da Arvore de Decisao
+arvore = DecisionTreeClassifier(max_depth=5, random_state=123)
+arvore.fit(X_train, y_train)
+
+# 6. Avaliacao
+previsoes = arvore.predict(X_test)
+print(classification_report(y_test, previsoes))</pre>
+    </section>
+
+    <!-- Exercício com dados sintéticos -->
+    <section class="card">
+        <h2>2. Arvore de Decisao vs Random Forest (Dados Sinteticos)</h2>
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'arvore-tab')">Arvore de Decisao</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'forest-tab')">Random Forest</button>
+        </div>
+        <div id="arvore-tab" class="tab-content active">
+            <div class="teoria">
+                Classifica se clientes preferem canal Online (1) ou Presencial (0) com base em Idade, Frequencia Mensal e Ticket Medio.
+            </div>
+            <button data-copy="codeArvore">Copiar codigo</button>
+            <pre id="codeArvore">import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.metrics import classification_report, confusion_matrix
+
+# 1. Dados sinteticos de clientes
+base_clientes = {
+    "Idade": [21, 24, 45, 52, 63, 19, 32, 58, 29, 41, 23, 67, 34, 49, 20, 61],
+    "Frequencia_Mensal": [6, 8, 2, 1, 1, 10, 5, 2, 7, 3, 9, 1, 4, 2, 8, 1],
+    "Ticket_Medio": [35, 42, 80, 95, 110, 25, 55, 75, 40, 65, 30, 120, 50, 85, 28, 105],
+    "Canal_Online": [1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+}
+df = pd.DataFrame(base_clientes)
+X = df[["Idade", "Frequencia_Mensal", "Ticket_Medio"]]
+y = df["Canal_Online"]
+
+# 2. Divisao estratificada (75/25)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42, stratify=y)
+
+# 3. Treino
+modelo = DecisionTreeClassifier(max_depth=3, criterion="gini", random_state=42)
+modelo.fit(X_train, y_train)
+previsoes = modelo.predict(X_test)
+
+# 4. Regras geradas
+print("--- Regras da Arvore de Decisao ---")
+print(export_text(modelo, feature_names=list(X.columns)))
+
+# 5. Avaliacao
+print("Matriz de Confusao:")
+print(confusion_matrix(y_test, previsoes))
+print("\nRelatorio:")
+print(classification_report(y_test, previsoes, zero_division=0))</pre>
+        </div>
+        <div id="forest-tab" class="tab-content">
+            <button data-copy="codeForest">Copiar codigo</button>
+            <pre id="codeForest">from sklearn.ensemble import RandomForestClassifier
+
+# Treino do Random Forest (50 arvores)
+floresta = RandomForestClassifier(n_estimators=50, random_state=42)
+floresta.fit(X_train, y_train)
+prev_floresta = floresta.predict(X_test)
+
+# Avaliacao
+print("--- Random Forest ---")
+print("Matriz de Confusao:")
+print(confusion_matrix(y_test, prev_floresta))
+print("\nRelatorio:")
+print(classification_report(y_test, prev_floresta, zero_division=0))
+
+# Feature Importance
+print("--- Importancia dos Atributos ---")
+for nome, imp in zip(X.columns, floresta.feature_importances_):
+    print(f"Variavel: {nome:<20} | Peso: {imp:.4f}")</pre>
+        </div>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

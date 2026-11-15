@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML: Clustering e Segmentacao - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #e74c3c; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #e74c3c; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #e74c3c; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #c0392b; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #e74c3c; background: #fdf0ef; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #5a1a1a; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #e74c3c; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #e74c3c; color: #fff; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html" class="active">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>ML: Clustering e Segmentacao de Clientes</h1>
+
+    <!-- SECÇÃO 1: Teoria -->
+    <section class="card">
+        <h2>Enquadramento Teorico</h2>
+        <div class="teoria">
+            O Descritivo Tecnico exige explicitamente a elaboracao de operacoes de ML com <strong>"Clusters (single link, complete link, kmeans, etc)"</strong>. Esta secao cobre os tres metodos.
+        </div>
+        <ul>
+            <li><strong>Clustering Hierarquico Aglomerado</strong>: Constroi uma hierarquia de baixo para cima, onde cada observacao comeca no seu proprio cluster e os pares mais proximos sao progressivamente fundidos.</li>
+            <li><strong>Single Linkage (Ligacao Simples)</strong>: Distancia entre clusters = distancia minima entre quaisquer pontos. Tende a formar cadeias longas (chaining effect).</li>
+            <li><strong>Complete Linkage (Ligacao Completa)</strong>: Distancia entre clusters = par de pontos mais afastado. Produz clusters mais compactos e esfericos.</li>
+            <li><strong>K-Means</strong>: Algoritmo de particao que divide o espaco em K grupos minimizando a distancia euclidiana quadratica ao centroide.</li>
+            <li><strong>Silhouette Score</strong>: Avalia a qualidade do agrupamento (-1 a +1). Valores proximos de +1 indicam clusters bem definidos.</li>
+            <li><strong>StandardScaler</strong>: Normaliza dados para media 0 e variancia 1 (evita que variaveis com maior magnitude dominem o calculo das distancias).</li>
+        </ul>
+    </section>
+
+    <!-- SECÇÃO 2: K-Means com dados da Frutose -->
+    <section class="card">
+        <h2>1. K-Means - Segmentacao de Clientes (Dados Frutose)</h2>
+        <div class="teoria">
+            Cenario de prova: O departamento de marketing pretende agrupar clientes com base no valor total gasto e na quantidade total de fruta comprada (Kg) para campanhas direcionadas.
+        </div>
+        <button data-copy="codeKmeans">Copiar codigo</button>
+        <pre id="codeKmeans">import pandas as pd
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+# 1. Ingestao dos dados
+df_sales = pd.read_csv('data/FactSales.csv', sep=';', decimal=',')
+df_customers = pd.read_csv('data/DimCostumer.csv')
+df_products = pd.read_csv('data/DimProduct.csv', sep=';', decimal=',')
+
+# 2. Merge das tabelas
+df_merged = df_sales.merge(df_customers, on='CustomerKey', how='left')
+df_merged = df_merged.merge(df_products, on='ProductKey', how='left')
+
+# 3. Criar feature e agregar por cliente
+df_merged['TotalGasto'] = df_merged['QuantityKg'] * df_merged['UnitPrice']
+customer_behavior = df_merged.groupby('CustomerKey').agg({
+    'TotalGasto': 'sum',
+    'QuantityKg': 'sum'
+}).reset_index()
+
+# 4. Selecionar variaveis de interesse
+X = customer_behavior[['TotalGasto', 'QuantityKg']]
+
+# 5. Aplicar K-Means com 3 clusters
+kmeans = KMeans(n_clusters=3, random_state=42, n_init='auto')
+customer_behavior['Cluster'] = kmeans.fit_predict(X)
+
+# 6. Visualizacao
+plt.scatter(customer_behavior['TotalGasto'], customer_behavior['QuantityKg'],
+            c=customer_behavior['Cluster'], cmap='viridis')
+plt.xlabel('Total Gasto (EUR)')
+plt.ylabel('Quantidade Comprada (Kg)')
+plt.title('Segmentacao de Clientes - K-Means (k=3)')
+plt.colorbar(label='Cluster')
+plt.show()</pre>
+    </section>
+
+    <!-- SECÇÃO 3: Clustering Hierárquico -->
+    <section class="card">
+        <h2>2. Clustering Hierarquico (Single e Complete Linkage)</h2>
+        <div class="teoria">
+            Exemplo com dados sinteticos de clientes retalhistas: <code>Volume_Kg</code> (quantidade agregada) e <code>Valor_Gasto</code> (faturacao total). Os dados foram criados em tres patamares: clientes de pequeno porte, grossistas e intermedios.
+        </div>
+        <button data-copy="codeHierarquico">Copiar codigo</button>
+        <pre id="codeHierarquico">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import linkage, dendrogram
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+# 1. Dados de teste: [Volume_Kg, Valor_Gasto]
+compras_clientes = np.array([
+    [5.0, 25.0],    # Perfil Pequeno Retalho
+    [6.2, 28.0],
+    [4.8, 22.5],
+    [50.0, 200.0],  # Perfil Grossista
+    [55.5, 220.0],
+    [48.0, 190.0],
+    [15.0, 120.0],  # Perfil Margem Elevada
+    [18.0, 130.0],
+    [14.5, 115.0],
+])
+
+# 2. Normalizacao (requisito previo para distancias euclidianas)
+escalador = StandardScaler()
+dados_padronizados = escalador.fit_transform(compras_clientes)
+
+# 3. Clustering Hierarquico
+matriz_single = linkage(dados_padronizados, method="single")    # Ligacao Simples
+matriz_complete = linkage(dados_padronizados, method="complete") # Ligacao Completa
+
+# 4. Dendrogramas
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+dendrogram(matriz_single, ax=ax1)
+ax1.set_title("Dendrograma - Single Linkage")
+ax1.set_xlabel("Indice do Ponto")
+ax1.set_ylabel("Distancia Euclidiana")
+
+dendrogram(matriz_complete, ax=ax2)
+ax2.set_title("Dendrograma - Complete Linkage")
+ax2.set_xlabel("Indice do Ponto")
+ax2.set_ylabel("Distancia Euclidiana")
+plt.tight_layout()
+plt.show()
+
+# 5. K-Means + Silhouette Score para validacao
+modelo_kmeans = KMeans(n_clusters=3, random_state=42, n_init="auto")
+rotulos = modelo_kmeans.fit_predict(dados_padronizados)
+silhueta = silhouette_score(dados_padronizados, rotulos)
+
+print("--- Resultados K-Means ---")
+print(f"Rotulos: {rotulos}")
+print(f"Silhouette Score: {silhueta:.4f}")
+print("Centroides (espaco padronizado):")
+print(modelo_kmeans.cluster_centers_.round(3))</pre>
+    </section>
+
+    <!-- SECÇÃO 4: Elbow Method -->
+    <section class="card">
+        <h2>3. Metodo do Cotovelo (Elbow Method)</h2>
+        <div class="teoria">
+            Para determinar o numero ideal de clusters, testar varios valores de K e observar onde a inercia (soma das distancias quadraticas ao centroide) deixa de diminuir significativamente.
+        </div>
+        <button data-copy="codeElbow">Copiar codigo</button>
+        <pre id="codeElbow">inercias = []
+K_range = range(2, 8)
+
+for k in K_range:
+    km = KMeans(n_clusters=k, random_state=42, n_init='auto')
+    km.fit(dados_padronizados)
+    inercias.append(km.inertia_)
+
+plt.plot(K_range, inercias, 'bo-')
+plt.xlabel('Numero de Clusters (K)')
+plt.ylabel('Inercia')
+plt.title('Metodo do Cotovelo')
+plt.show()</pre>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

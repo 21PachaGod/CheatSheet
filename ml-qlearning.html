@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML: Q-Learning - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #9b59b6; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #8e44ad; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #8e44ad; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #7d3c98; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #9b59b6; background: #f5eef8; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #4a1a5c; }
+        .formula { padding: 10px 15px; background: #f8f9fa; border-radius: 6px; text-align: center; font-family: "Times New Roman", serif; font-size: 16px; margin: 10px 0; border: 1px solid #dee2e6; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #8e44ad; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html" class="active">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>ML: Q-Learning (Aprendizagem por Reforco)</h1>
+
+    <!-- Teoria -->
+    <section class="card">
+        <h2>Enquadramento Teorico</h2>
+        <div class="teoria">
+            O Q-Learning e um algoritmo de Aprendizagem por Reforco (Reinforcement Learning), livre de modelo (model-free) e fora da politica (off-policy). O agente aprende uma politica otima interagindo com o ambiente.
+        </div>
+        <ul>
+            <li><strong>Matriz Q - Q(s, a)</strong>: Tabela que guarda o valor de utilidade esperado ao tomar a acao <em>a</em> no estado <em>s</em>.</li>
+            <li><strong>Equacao de Bellman</strong>:</li>
+        </ul>
+        <div class="formula">Q(s,a) &larr; Q(s,a) + &alpha; [ R + &gamma; max Q(s',a') - Q(s,a) ]</div>
+        <ul>
+            <li><strong>&alpha; (Learning Rate)</strong>: Velocidade com que nova informacao sobrepoee a antiga (0 &lt; &alpha; &le; 1).</li>
+            <li><strong>&gamma; (Discount Factor)</strong>: Peso das recompensas futuras vs. imediatas (0 &le; &gamma; &lt; 1).</li>
+            <li><strong>&epsilon; (Epsilon-Greedy)</strong>: Equilibrio entre exploracao (acoes aleatorias) e aproveitamento (melhor acao conhecida).</li>
+        </ul>
+    </section>
+
+    <!-- Ambiente -->
+    <section class="card">
+        <h2>Definicao do Ambiente de Teste</h2>
+        <div class="teoria">
+            Cenario logistico linear simplificado com 5 estados (0 a 4):
+        </div>
+        <ul>
+            <li><strong>Estado 0</strong>: Ponto de partida do operador de armazem.</li>
+            <li><strong>Estado 4</strong>: Zona de expedicao (objetivo final, recompensa = +100).</li>
+            <li><strong>Estados 1, 2 e 3</strong>: Postos intermedios de controlo (penalizacao = -1).</li>
+            <li><strong>Acoes</strong>: 0 = Esquerda, 1 = Direita.</li>
+        </ul>
+    </section>
+
+    <!-- Código -->
+    <section class="card">
+        <h2>Codigo Completo com Solucao Comentada</h2>
+        <button data-copy="codeQL">Copiar codigo</button>
+        <pre id="codeQL">import numpy as np
+
+# 1. Parametros do Ambiente
+NUM_ESTADOS = 5       # Estados de 0 a 4
+NUM_ACOES = 2         # 0: Esquerda, 1: Direita
+ESTADO_OBJETIVO = 4   # Estado final com recompensa maxima
+
+# 2. Hiperparametros do Q-Learning
+alpha = 0.1           # Taxa de aprendizagem
+gamma = 0.9           # Fator de desconto
+epsilon = 0.2         # Probabilidade de exploracao
+num_episodios = 600   # Numero total de episodios de treino
+
+# Inicializacao da Tabela Q com zeros (5 estados x 2 acoes)
+q_table = np.zeros((NUM_ESTADOS, NUM_ACOES))
+
+print("--- Tabela Q Inicial ---")
+print(q_table)
+
+# 3. Ciclo Principal de Treino
+for episodio in range(num_episodios):
+    estado_atual = 0  # Comecar sempre no estado 0
+
+    while estado_atual != ESTADO_OBJETIVO:
+        # Politica Epsilon-Greedy
+        if np.random.uniform(0, 1) < epsilon:
+            acao = np.random.choice([0, 1])         # Exploracao
+        else:
+            acao = np.argmax(q_table[estado_atual, :])  # Aproveitamento
+
+        # Transicao de estado
+        if acao == 1:
+            proximo_estado = min(estado_atual + 1, NUM_ESTADOS - 1)
+        else:
+            proximo_estado = max(estado_atual - 1, 0)
+
+        # Recompensa
+        if proximo_estado == ESTADO_OBJETIVO:
+            recompensa = 100.0
+        else:
+            recompensa = -1.0
+
+        # Atualizacao da Tabela Q (Equacao de Bellman)
+        max_q_futuro = np.max(q_table[proximo_estado, :])
+        diferenca_temporal = (
+            recompensa + (gamma * max_q_futuro) - q_table[estado_atual, acao]
+        )
+        q_table[estado_atual, acao] += alpha * diferenca_temporal
+
+        estado_atual = proximo_estado
+
+# 4. Resultados
+print("\n--- Tabela Q Final (Convergida) ---")
+print("Estado | Esquerda (0) | Direita (1)")
+for estado in range(NUM_ESTADOS):
+    print(f"  {estado}    |    {q_table[estado, 0]:6.2f}    |   {q_table[estado, 1]:6.2f}")
+
+# 5. Politica Otima Aprendida
+print("\n--- Politica Otima por Estado ---")
+nomes_acoes = {0: "Mover para a Esquerda", 1: "Mover para a Direita"}
+for s in range(NUM_ESTADOS - 1):
+    melhor_acao = np.argmax(q_table[s, :])
+    print(f"No Estado {s}, a decisao otima e: {nomes_acoes[melhor_acao]}")</pre>
+    </section>
+
+    <script>
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

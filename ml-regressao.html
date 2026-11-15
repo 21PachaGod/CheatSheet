@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML: Regressao - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .card { padding: 20px; margin-bottom: 20px; border-left: 5px solid #2ecc71; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #27ae60; margin-top: 0; }
+        .back { display: inline-block; margin-bottom: 20px; padding: 8px 15px; border-radius: 5px; background: #27ae60; color: #fff; text-decoration: none; font-weight: bold; }
+        .back:hover { background: #1e8449; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #2ecc71; background: #eafaf1; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #1a5c2a; }
+        .formula { padding: 10px 15px; background: #f8f9fa; border-radius: 6px; text-align: center; font-family: "Times New Roman", serif; font-size: 16px; margin: 10px 0; border: 1px solid #dee2e6; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #27ae60; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #27ae60; color: #fff; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html" class="active">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+    <h1>ML: Regressao Linear e Logistica</h1>
+
+    <!-- Teoria -->
+    <section class="card">
+        <h2>Enquadramento Teorico</h2>
+        <div class="teoria">
+            O Descritivo Tecnico exige <strong>"Regressao (logistica, linear)"</strong>. Esta pagina cobre ambas com exemplos dos dados Frutose e dados sinteticos.
+        </div>
+        <h3>Regressao Linear Multipla</h3>
+        <p>Modela a relacao entre uma variavel continua dependente <em>y</em> e variaveis independentes:</p>
+        <div class="formula">y = b0 + b1*X1 + b2*X2 + ... + e</div>
+        <ul>
+            <li><strong>R² (Coeficiente de Determinacao)</strong>: Proporcao da variancia explicada pelo modelo (0 a 1). Quanto mais proximo de 1, melhor.</li>
+            <li><strong>RMSE (Root Mean Squared Error)</strong>: Desvio padrao dos residuos, na mesma unidade da variavel de saida.</li>
+        </ul>
+
+        <h3>Regressao Logistica</h3>
+        <p>Modelo linear generalizado para estimar a probabilidade de uma classe binaria atraves da funcao sigmoide:</p>
+        <div class="formula">P(Y=1) = 1 / (1 + e^-(b0 + b1*X))</div>
+    </section>
+
+    <!-- Regressão Linear com dados Frutose -->
+    <section class="card">
+        <h2>1. Regressao Linear - Previsao de Lucro (Dados Frutose)</h2>
+        <div class="teoria">
+            Cenario de prova: Prever o ProfitAmount de uma venda com base em QuantityKg, UnitPrice e DiscountPct. Avaliacao com dados de teste (80/20).
+        </div>
+        <button data-copy="codeRegLinFrutose">Copiar codigo</button>
+        <pre id="codeRegLinFrutose">import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
+# 1. Ingestao
+df_sales = pd.read_csv('data/FactSales.csv', sep=';', decimal=',')
+df_products = pd.read_csv('data/DimProduct.csv', sep=';', decimal=',')
+df_merged = df_sales.merge(df_products, on='ProductKey', how='left')
+
+# 2. Preparacao (remover nulos nas colunas de interesse)
+df_model = df_merged.dropna(subset=['QuantityKg', 'UnitPrice', 'DiscountPct', 'ProfitAmount'])
+X = df_model[['QuantityKg', 'UnitPrice', 'DiscountPct']]
+y = df_model['ProfitAmount']
+
+# 3. Divisao treino/teste (80/20)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 4. Treino do modelo
+modelo = LinearRegression()
+modelo.fit(X_train, y_train)
+
+# 5. Previsao e avaliacao
+previsoes = modelo.predict(X_test)
+rmse = np.sqrt(mean_squared_error(y_test, previsoes))
+r2 = r2_score(y_test, previsoes)
+
+print(f"Intercept (b0): {modelo.intercept_:.4f}")
+print(f"Coeficientes: {modelo.coef_.round(4)}")
+print(f"RMSE: {rmse:.4f}")
+print(f"R²: {r2:.4f}")</pre>
+    </section>
+
+    <!-- Regressão Linear e Logística com dados sintéticos -->
+    <section class="card">
+        <h2>2. Regressao Linear e Logistica (Dados Sinteticos)</h2>
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'reglin-tab')">Regressao Linear</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'reglog-tab')">Regressao Logistica</button>
+        </div>
+        <div id="reglin-tab" class="tab-content active">
+            <div class="teoria">
+                Relacao entre volume vendido (Quantidade_Kg), preco unitario (Preco_Unitario) e margem de lucro (Valor_Lucro em EUR).
+            </div>
+            <button data-copy="codeRegLinSint">Copiar codigo</button>
+            <pre id="codeRegLinSint">import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Dados: [Quantidade_Kg, Preco_Unitario]
+X_linear = np.array([
+    [10.0, 2.50], [15.0, 2.80], [8.5, 2.10], [25.0, 3.20],
+    [32.0, 3.00], [5.0, 1.80], [18.0, 2.90], [40.0, 3.50],
+])
+
+# Lucros correspondentes (EUR)
+y_lucro = np.array([6.50, 11.20, 4.30, 26.50, 33.10, 2.10, 14.80, 48.00])
+
+# Treino
+reg = LinearRegression()
+reg.fit(X_linear, y_lucro)
+y_pred = reg.predict(X_linear)
+
+# Metricas
+r2 = r2_score(y_lucro, y_pred)
+rmse = np.sqrt(mean_squared_error(y_lucro, y_pred))
+
+print("--- Regressao Linear Multipla ---")
+print(f"Intercept (b0): {reg.intercept_:.4f}")
+print(f"Coeficientes (b1, b2): {reg.coef_.round(4)}")
+print(f"R²: {r2:.4f}")
+print(f"RMSE: {rmse:.4f} EUR")</pre>
+        </div>
+        <div id="reglog-tab" class="tab-content">
+            <div class="teoria">
+                Relacao univariada entre a Idade de clientes e a sua recetividade (0 ou 1) a campanhas sazonais focadas em frutos silvestres.
+            </div>
+            <button data-copy="codeRegLog">Copiar codigo</button>
+            <pre id="codeRegLog">import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+# Idades e adesao a campanha (1=Adere, 0=Nao Adere)
+idades = np.array([19, 22, 25, 30, 38, 45, 52, 60, 68, 75]).reshape(-1, 1)
+adesao = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0])
+
+# Treino
+reg_log = LogisticRegression()
+reg_log.fit(idades, adesao)
+
+# Previsao para novos clientes
+novas_idades = np.array([[24], [55]])
+probabilidades = reg_log.predict_proba(novas_idades)
+classes = reg_log.predict(novas_idades)
+
+print("--- Regressao Logistica ---")
+for idade, prob, classe in zip(novas_idades, probabilidades, classes):
+    print(f"Idade: {idade[0]} anos")
+    print(f"  Prob. Rejeicao (0): {prob[0]*100:.2f}%")
+    print(f"  Prob. Aceitacao (1): {prob[1]*100:.2f}%")
+    print(f"  Decisao: {'Adere' if classe == 1 else 'Nao Adere'}")</pre>
+        </div>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+

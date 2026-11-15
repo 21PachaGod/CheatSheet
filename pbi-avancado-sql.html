@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python no Power BI, M e SQL - WSP27</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 960px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        .nav-bar a { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; color: #495057; background: #e9ecef; transition: all .2s; }
+        .nav-bar a:hover, .nav-bar a.active { background: #0056b3; color: #fff; }
+        .card { padding: 22px; margin-bottom: 22px; border-left: 5px solid #17a2b8; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+        h1, h2, h3 { color: #117a8b; margin-top: 0; }
+        button { padding: 8px 15px; border: 0; border-radius: 5px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; transition: background .15s; }
+        button:hover { background: #218838; }
+        pre { margin-top: 10px; padding: 15px; overflow-x: auto; border-radius: 6px; background: #1e1e1e; color: #d4d4d4; font: 13px/1.5 Consolas, monospace; white-space: pre-wrap; }
+        code { padding: 2px 6px; border-radius: 4px; background: #eef1f5; color: #d63384; font-family: Consolas, monospace; }
+        ol, ul { line-height: 1.8; }
+        .teoria { padding: 12px 15px; border-left: 4px solid #17a2b8; background: #e8f7f9; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #0c5460; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+        .tab-btn { background: #e9ecef; color: #333; }
+        .tab-btn.active { background: #17a2b8; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        @media (max-width: 600px) { .tabs { display: block; } .tab-btn { margin: 3px 0; } }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="index.html">Menu</a>
+        <a href="python-prep.html">Python Prep</a>
+        <a href="ml-clustering.html">Clustering</a>
+        <a href="ml-classificacao.html">Classificação</a>
+        <a href="ml-regressao.html">Regressão</a>
+        <a href="ml-qlearning.html">Q-Learning</a>
+        <a href="powerbi-dax.html">Power BI & DAX</a>
+        <a href="pbi-avancado-sql.html" class="active">Python no PBI & SQL</a>
+        <a href="assistente-gemini.html">Assistente IA</a>
+    </nav>
+
+    <h1>Python no Power BI, Scripts M e SQL Server</h1>
+
+    <!-- 1. PYTHON VISUALS NO POWER BI -->
+    <section class="card">
+        <h2>1. Elementos Visuais em Script Python no Power BI</h2>
+        <div class="teoria">
+            <strong>Exigência Explícita do Descritivo Técnico:</strong> "Poderá ainda ser requerido do candidato demonstrar a capacidade de criar um elemento visual em script R ou Py dentro do PBI".<br>
+            <strong>Como funciona no Power BI:</strong>
+            <ol>
+                <li>No Power BI Desktop, clica no ícone <strong>Elemento visual do Python (Py)</strong> no painel de visualizações.</li>
+                <li>Arrasta as colunas necessárias para o campo <strong>Valores</strong>.</li>
+                <li>O Power BI cria automaticamente o DataFrame com o nome <code>dataset</code>, eliminando linhas duplicadas.</li>
+                <li>Colas o código de visualização no editor de script e clicas no botão <strong>Executar (Play)</strong>.</li>
+            </ol>
+        </div>
+
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'pyvis-scatter')">Scatter com Clusters</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'pyvis-heatmap')">Heatmap de Correlação</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'pyvis-dist')">Boxplot / Distribuição</button>
+        </div>
+
+        <div id="pyvis-scatter" class="tab-content active">
+            <p>Visualizar dispersão de vendas (Quantidade vs TotalGasto) com centróides:</p>
+            <button data-copy="codePyVisScatter">Copiar Script do Visual Python</button>
+            <pre id="codePyVisScatter"># Código colado no visual Python do Power BI
+# O Power BI já cria automaticamente: dataset = pandas.DataFrame(...)
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+# 1. Obter dados do Power BI
+df = dataset.dropna()
+
+# 2. Executar K-Means se as colunas forem TotalGasto e QuantityKg
+if 'TotalGasto' in df.columns and 'QuantityKg' in df.columns:
+    X = df[['TotalGasto', 'QuantityKg']]
+    kmeans = KMeans(n_clusters=3, random_state=42, n_init='auto')
+    df['Cluster'] = kmeans.fit_predict(X)
+
+    # 3. Desenhar gráfico
+    plt.figure(figsize=(7, 4.5))
+    scatter = plt.scatter(df['TotalGasto'], df['QuantityKg'], c=df['Cluster'], cmap='viridis', alpha=0.7, edgecolors='k')
+    plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=200, c='red', marker='X', label='Centróides')
+    plt.xlabel('Total Gasto (€)', fontsize=10)
+    plt.ylabel('Quantidade (Kg)', fontsize=10)
+    plt.title('Segmentação de Clientes (K-Means)', fontsize=12, fontweight='bold')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()</pre>
+        </div>
+
+        <div id="pyvis-heatmap" class="tab-content">
+            <p>Heatmap de correlação de Pearson entre as variáveis da tabela de vendas:</p>
+            <button data-copy="codePyVisHeatmap">Copiar Script Heatmap</button>
+            <pre id="codePyVisHeatmap">import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = dataset.dropna()
+
+plt.figure(figsize=(6, 4.5))
+matriz_corr = df.corr(numeric_only=True)
+sns.heatmap(matriz_corr, annot=True, fmt='.2f', cmap='Blues', cbar=True, square=True)
+plt.title('Matriz de Correlação Linear', fontsize=12, fontweight='bold')
+plt.tight_layout()
+plt.show()</pre>
+        </div>
+
+        <div id="pyvis-dist" class="tab-content">
+            <p>Boxplot comparativo de lucro ou preço por categoria/canal:</p>
+            <button data-copy="codePyVisBox">Copiar Script Boxplot</button>
+            <pre id="codePyVisBox">import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = dataset.dropna()
+
+plt.figure(figsize=(7, 4))
+sns.boxplot(data=df, x=df.columns[0], y=df.columns[1], palette='Set2')
+plt.title(f'Distribuição de {df.columns[1]} por {df.columns[0]}', fontsize=11, fontweight='bold')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()</pre>
+        </div>
+    </section>
+
+    <!-- 2. POWER QUERY E LINGUAGEM M -->
+    <section class="card">
+        <h2>2. Power Query (Linguagem M) — Tarefas Oficiais da Prova</h2>
+        <div class="teoria">
+            Tarefas resolvidas dos guiões oficiais (Grupo Frutose e Regional 1):
+        </div>
+
+        <div class="tabs">
+            <button type="button" class="tab-btn active" onclick="mudarAba(this, 'm-condicional')">Coluna Condicional</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'm-datas')">Conversão DateKey</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'm-limpeza')">Limpeza & Tipagem</button>
+            <button type="button" class="tab-btn" onclick="mudarAba(this, 'm-py')">Script Python no Power Query</button>
+        </div>
+
+        <div id="m-condicional" class="tab-content active">
+            <p><strong>Tarefa 19 Frutose:</strong> Criar coluna <code>Origem_Compra</code> (se MBWAY ou Transferência Bancária &rarr; "online", senão &rarr; "presenciais"):</p>
+            <button data-copy="codeMCond">Copiar Código M</button>
+            <pre id="codeMCond">#"Coluna Origem_Compra Adicionada" = Table.AddColumn(
+    #"Etapa_Anterior", 
+    "Origem_Compra", 
+    each if [Metodo_Pagamento] = "Transferencia Bancaria" or [Metodo_Pagamento] = "MBWAY" 
+         then "online" 
+         else "presenciais", 
+    type text
+)</pre>
+        </div>
+
+        <div id="m-datas" class="tab-content">
+            <p><strong>Tarefa 20 Frutose:</strong> Substituir <code>DateKey</code> inteiro (ex: 20240518) por coluna tipo Data nomeada <code>Data</code>:</p>
+            <button data-copy="codeMDate">Copiar Código M</button>
+            <pre id="codeMDate">#"Data Convertida e Renomeada" = Table.TransformColumns(
+    #"Etapa_Anterior", 
+    {{"DateKey", each Date.FromText(Text.From(_)), type date}}
+),
+#"Coluna DateKey Renomeada" = Table.RenameColumns(
+    #"Data Convertida e Renomeada", 
+    {{"DateKey", "Data"}}
+)</pre>
+        </div>
+
+        <div id="m-limpeza" class="tab-content">
+            <p>Operações de limpeza fundamentais (remover duplicados, aparar texto e remover colunas de relação):</p>
+            <button data-copy="codeMLimpeza">Copiar Código M Limpeza</button>
+            <pre id="codeMLimpeza">// 1. Aparar espaços em branco (Trim) e limpar caracteres não imprimíveis (Clean)
+= Table.TransformColumns(#"Etapa_Anterior", {{"Nome", Text.Trim, type text}, {"Nome", Text.Clean, type text}})
+
+// 2. Colocar cada palavra em maiúscula (Capitalize)
+= Table.TransformColumns(#"Etapa_Anterior", {{"Nome", Text.Proper, type text}})
+
+// 3. Remover linhas duplicadas por chave primária
+= Table.Distinct(#"Etapa_Anterior", {"CustomerKey"})
+
+// 4. Substituir valores nulos por 0
+= Table.ReplaceValue(#"Etapa_Anterior", null, 0, Replacer.ReplaceValue, {"DiscountAmount"})
+
+// 5. Despivotar outras colunas (Unpivot)
+= Table.UnpivotOtherColumns(#"Etapa_Anterior", {"LojaID", "ProdutoID"}, "Mes", "Valor")</pre>
+        </div>
+
+        <div id="m-py" class="tab-content">
+            <p>Executar script Python de interpolação diretamente no Power Query (Transformar &gt; Executar Script Python):</p>
+            <button data-copy="codeMPy">Copiar Código Python no Power Query</button>
+            <pre id="codeMPy"># 'dataset' armazena os dados de entrada para este script
+import pandas as pd
+df = dataset
+
+# Interpolação linear de valores omissos
+df['QuantidadeKg'] = df['QuantidadeKg'].interpolate(method='linear')
+df['UnitPrice'] = df['UnitPrice'].fillna(df['UnitPrice'].median())
+
+# A saída é o DataFrame transformado
+output = df</pre>
+        </div>
+    </section>
+
+    <!-- 3. TABELA CALENDÁRIO DAX COMPLETA -->
+    <section class="card">
+        <h2>3. Tabela Calendário DAX Completa (Requisito Oficial Regional 1 & 2)</h2>
+        <div class="teoria">
+            <strong>Exigência Oficial:</strong> "Recorrendo a DAX, cria uma tabela automática de datas com o nome Datas e classifica-a como tabela de datas. Adiciona as colunas: Ano, Mês, Nome_Mês, Trimestre 'T2', Dia_Semana 'sexta-feira' e AnoMes".
+        </div>
+        <button data-copy="codeDaxCalendar">Copiar DAX Tabela Calendário</button>
+        <pre id="codeDaxCalendar">// 1. Criar Nova Tabela (Modelagem > Nova Tabela):
+Datas = 
+VAR DataMin = MIN(FactSales[Data])
+VAR DataMax = MAX(FactSales[Data])
+RETURN
+ADDCOLUMNS(
+    CALENDAR(DataMin, DataMax),
+    "Ano", YEAR([Date]),
+    "Mes_Num", MONTH([Date]),
+    "Nome_Mes", FORMAT([Date], "mmmm"),
+    "Trimestre", "T" & FORMAT([Date], "q"),
+    "Dia_Semana", FORMAT([Date], "dddd"),
+    "Dia_Semana_Num", WEEKDAY([Date], 2), -- 1=Segunda, 7=Domingo
+    "AnoMes", YEAR([Date]) * 100 + MONTH([Date])
+)
+
+// Passos Obrigatórios na Interface:
+// 1. Clicar com o botão direito na tabela Datas > "Marcar como tabela de datas" > Selecionar a coluna [Date].
+// 2. Selecionar a coluna [Nome_Mes] > Ferramentas de Coluna > "Ordenar por Coluna" > Selecionar [Mes_Num].
+// 3. Criar a Hierarquia de Tempo: Ano > Trimestre > Nome_Mes > Date.</pre>
+    </section>
+
+    <!-- 4. CONSULTAS SQL SERVER -->
+    <section class="card">
+        <h2>4. SQL Server / SQLEXPRESS — Queries Essenciais</h2>
+        <div class="teoria">
+            A lista de infraestruturas inclui <strong>SQLEXPRESS</strong> e <strong>SQL Server Management Studio (SSMS)</strong>. As consultas seguintes cobrem a ingestão, agregação e criação de vistas para o Power BI.
+        </div>
+        <button data-copy="codeSQL">Copiar Queries SQL</button>
+        <pre id="codeSQL">-- 1. Ingestão agregada para alimentar o Power BI ou Python
+SELECT 
+    f.CustomerKey,
+    c.CustomerName,
+    COUNT(f.SalesKey) AS TotalTransacoes,
+    SUM(f.QuantityKg) AS TotalKg,
+    SUM(f.QuantityKg * f.UnitPrice) AS TotalFaturado,
+    SUM(f.ProfitAmount) AS LucroTotal,
+    ROUND(SUM(f.ProfitAmount) / NULLIF(SUM(f.QuantityKg * f.UnitPrice), 0) * 100, 2) AS MargemPct
+FROM FactSales f
+LEFT JOIN DimCostumer c ON f.CustomerKey = c.CustomerKey
+GROUP BY f.CustomerKey, c.CustomerName
+HAVING SUM(f.QuantityKg * f.UnitPrice) > 100
+ORDER BY TotalFaturado DESC;
+
+-- 2. Identificação de Produtos com Rutura de Stock
+SELECT 
+    p.ProductKey,
+    p.ProductName,
+    s.StockActual,
+    s.PontoReposicao,
+    CASE 
+        WHEN s.StockActual = 0 THEN 'Rutura Crítica'
+        WHEN s.StockActual < s.PontoReposicao THEN 'Abaixo do Ponto de Reposição'
+        ELSE 'Stock Normal'
+    END AS EstadoStock
+FROM DimProduct p
+INNER JOIN StockPolo s ON p.ProductKey = s.ProductKey
+WHERE s.StockActual < s.PontoReposicao;
+
+-- 3. Criar Vista para o Power BI (Boa prática de arquitetura)
+CREATE VIEW vw_ResumoVendasMensais AS
+SELECT 
+    d.CalendarYear,
+    d.MonthNumberOfYear,
+    p.CategoryName,
+    SUM(f.QuantityKg * f.UnitPrice) AS ReceitaTotal,
+    SUM(f.ProfitAmount) AS LucroTotal
+FROM FactSales f
+JOIN DimDate d ON f.DateKey = d.DateKey
+JOIN DimProduct p ON f.ProductKey = p.ProductKey
+GROUP BY d.CalendarYear, d.MonthNumberOfYear, p.CategoryName;</pre>
+    </section>
+
+    <!-- 5. EQUIVALENTES EM LINGUAGEM R -->
+    <section class="card">
+        <h2>5. Equivalentes em Linguagem R (Alternativa da Prova)</h2>
+        <div class="teoria">
+            O descritivo permite usar <strong>Python ou R</strong>. Caso prefiras ou a prova peça scripts em R:
+        </div>
+        <button data-copy="codeR">Copiar Scripts em R</button>
+        <pre id="codeR"># 1. Leitura e Preparação
+df_sales <- read.csv("data/FactSales.csv", sep=";", dec=",")
+df_products <- read.csv("data/DimProduct.csv", sep=";", dec=",")
+df_merged <- merge(df_sales, df_products, by="ProductKey", all.x=TRUE)
+
+# 2. Clustering K-Means em R
+dados_cluster <- aggregate(cbind(TotalGasto = QuantityKg * UnitPrice, QuantityKg) ~ CustomerKey, data=df_merged, sum)
+X <- scale(dados_cluster[, c("TotalGasto", "QuantityKg")])
+km <- kmeans(X, centers=3, nstart=25)
+dados_cluster$Cluster <- km$cluster
+
+# 3. Clustering Hierárquico (Single e Complete Linkage) em R
+d <- dist(X, method="euclidean")
+hc_single <- hclust(d, method="single")
+hc_complete <- hclust(d, method="complete")
+par(mfrow=c(1, 2))
+plot(hc_single, main="Single Linkage", xlab="", sub="")
+plot(hc_complete, main="Complete Linkage", xlab="", sub="")
+
+# 4. Regressão Linear em R
+modelo_reg <- lm(ProfitAmount ~ QuantityKg + UnitPrice + DiscountPct, data=df_merged)
+summary(modelo_reg)
+
+# 5. Árvore de Decisão em R (rpart)
+library(rpart)
+library(rpart.plot)
+df_merged$AltoLucro <- as.factor(ifelse(df_merged$ProfitAmount > 10, 1, 0))
+arvore_r <- rpart(AltoLucro ~ QuantityKg + UnitPrice + StandardCost, data=df_merged, method="class")
+rpart.plot(arvore_r)</pre>
+    </section>
+
+    <script>
+        function mudarAba(botao, idConteudo) {
+            const card = botao.closest(".card");
+            card.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            card.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            botao.classList.add("active");
+            document.getElementById(idConteudo).classList.add("active");
+        }
+
+        document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent);
+            const original = button.textContent; button.textContent = "Copiado!";
+            setTimeout(() => { button.textContent = original; }, 1200);
+        }));
+    </script>
+</body>
+</html>
+
